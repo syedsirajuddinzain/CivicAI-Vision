@@ -116,13 +116,11 @@ export async function analyzeCivicImage(imagePath, mimeType = 'image/jpeg', orig
       'gemini-3.1-flash-lite',
       'gemini-3.6-flash',
       'gemini-3.5-flash',
-      'gemini-3.7-flash',
-      'gemini-3.8-flash',
     ];
+    const ai = new GoogleGenAI({ apiKey: geminiKey.trim() });
     for (const modelName of geminiModels) {
       if (result) break;
       try {
-        const ai = new GoogleGenAI({ apiKey: geminiKey.trim() });
         console.log(`[AI Vision] Sending actual image to Gemini (${modelName}) vision model...`);
         const response = await ai.models.generateContent({
           model: modelName,
@@ -135,7 +133,11 @@ export async function analyzeCivicImage(imagePath, mimeType = 'image/jpeg', orig
               ],
             },
           ],
-          config: { responseMimeType: 'application/json' },
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.1,
+            maxOutputTokens: 200,
+          },
         });
 
         let rawText = response.text || '{}';

@@ -6,7 +6,7 @@
  * Reduces 5MB-15MB phone photos to ~150KB-300KB for instant upload and localStorage safety.
  */
 
-export async function compressImage(file, { maxWidth = 1280, maxHeight = 1280, quality = 0.8 } = {}) {
+export async function compressImage(file, { maxWidth = 800, maxHeight = 800, quality = 0.75 } = {}) {
   if (!file || !file.type.startsWith('image/')) {
     throw new Error('Provided file is not an image.');
   }
