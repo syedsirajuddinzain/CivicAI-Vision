@@ -71,11 +71,11 @@ app.use('/api/ai', aiRoutes);
 const DIST_DIR = path.resolve(__dirname, '../dist');
 if (fs.existsSync(DIST_DIR)) {
   app.use(express.static(DIST_DIR));
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-      return next();
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      return res.sendFile(path.join(DIST_DIR, 'index.html'));
     }
-    res.sendFile(path.join(DIST_DIR, 'index.html'));
+    next();
   });
 }
 
