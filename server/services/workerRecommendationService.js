@@ -22,8 +22,14 @@ export async function getRecommendedWorkers(ticketId) {
     throw new Error('Ticket not found for worker recommendation');
   }
 
-  const workers = await Worker.find({ active: true });
-  const workerList = Array.isArray(workers) ? workers : [];
+  let workers = await Worker.find({ active: true });
+  let workerList = Array.isArray(workers) ? workers : [];
+  if (workerList.length === 0) {
+    const { DEFAULT_WORKERS } = await import('../controllers/workerController.js');
+    await Worker.insertMany(DEFAULT_WORKERS);
+    workers = await Worker.find({ active: true });
+    workerList = Array.isArray(workers) ? workers : DEFAULT_WORKERS;
+  }
 
   const scoredWorkers = workerList.map((worker) => {
     let score = 0;

@@ -4,12 +4,103 @@ import WorkerRequest from '../models/WorkerRequest.js';
 import Notification from '../models/Notification.js';
 import { getRecommendedWorkers } from '../services/workerRecommendationService.js';
 
+export const DEFAULT_WORKERS = [
+  {
+    _id: 'WRK-101',
+    workerId: 'WRK-101',
+    name: 'Kavita Sharma',
+    phone: '+91 98765 43210',
+    departmentId: 'dept_roads',
+    departmentName: 'Roads & Infrastructure Department',
+    wardId: 'ward_101',
+    wardName: 'Ward 101 — Central Business District',
+    skills: ['Pothole Repair', 'Asphalt Laying', 'Road Maintenance'],
+    availabilityStatus: 'Available',
+    currentLocation: { latitude: 12.9716, longitude: 77.5946 },
+    active: true,
+  },
+  {
+    _id: 'WRK-102',
+    workerId: 'WRK-102',
+    name: 'Anita Desai',
+    phone: '+91 98765 43216',
+    departmentId: 'dept_electrical',
+    departmentName: 'Electrical Department',
+    wardId: 'ward_102',
+    wardName: 'Ward 102 — Indiranagar Civic Zone',
+    skills: ['Streetlight Maintenance', 'Wiring', 'Transformer Inspection'],
+    availabilityStatus: 'Available',
+    currentLocation: { latitude: 13.0105, longitude: 77.6055 },
+    active: true,
+  },
+  {
+    _id: 'WRK-103',
+    workerId: 'WRK-103',
+    name: 'Suresh Patil',
+    phone: '+91 98765 43212',
+    departmentId: 'dept_water',
+    departmentName: 'Water & Drainage Department',
+    wardId: 'ward_103',
+    wardName: 'Ward 103 — Koramangala South Basin',
+    skills: ['Storm Drainage', 'Culvert Jetting', 'Wastewater'],
+    availabilityStatus: 'Available',
+    currentLocation: { latitude: 12.9305, longitude: 77.581 },
+    active: true,
+  },
+  {
+    _id: 'WRK-104',
+    workerId: 'WRK-104',
+    name: 'Manjunath Gowda',
+    phone: '+91 98765 43213',
+    departmentId: 'dept_sanitation',
+    departmentName: 'Sanitation Department',
+    wardId: 'ward_104',
+    wardName: 'Ward 104 — Whitefield Tech Corridor',
+    skills: ['Solid Waste Disposal', 'Dumpster Clearance', 'Street Sanitization'],
+    availabilityStatus: 'Available',
+    currentLocation: { latitude: 12.981, longitude: 77.671 },
+    active: true,
+  },
+  {
+    _id: 'WRK-105',
+    workerId: 'WRK-105',
+    name: 'Rajesh Varma',
+    phone: '+91 98765 43214',
+    departmentId: 'dept_general',
+    departmentName: 'General Municipal Department',
+    wardId: 'ward_105',
+    wardName: 'Ward 105 — Jayanagar Heritage Sector',
+    skills: ['Public Works', 'Tree Trimming', 'Park Infrastructure'],
+    availabilityStatus: 'Available',
+    currentLocation: { latitude: 12.956, longitude: 77.521 },
+    active: true,
+  },
+  {
+    _id: 'WRK-106',
+    workerId: 'WRK-106',
+    name: 'Ramesh Kumar',
+    phone: '+91 98765 43215',
+    departmentId: 'dept_roads',
+    departmentName: 'Roads & Infrastructure Department',
+    wardId: 'ward_101',
+    wardName: 'Ward 101 — Central Business District',
+    skills: ['Pothole Repair', 'Heavy Machinery', 'Asphalt Patching'],
+    availabilityStatus: 'Available',
+    currentLocation: { latitude: 12.9716, longitude: 77.5946 },
+    active: true,
+  },
+];
+
 export async function getWorkers(req, res) {
   try {
     const { departmentId, wardId, status } = req.query;
+    let count = await Worker.countDocuments({ active: true });
+    if (count === 0) {
+      await Worker.insertMany(DEFAULT_WORKERS);
+    }
+
     const filter = { active: true };
 
-    // If authority user has a specific department, filter to their department
     if (req.user?.role === 'authority' && req.user.departmentId && req.user.departmentId !== 'all') {
       filter.departmentId = req.user.departmentId;
     } else if (departmentId) {
@@ -19,8 +110,15 @@ export async function getWorkers(req, res) {
     if (wardId) filter.wardId = wardId;
     if (status) filter.availabilityStatus = status;
 
-    const workers = await Worker.find(filter);
-    const workerList = Array.isArray(workers) ? workers : [];
+    let workers = await Worker.find(filter);
+    let workerList = Array.isArray(workers) ? workers : [];
+
+    // Fallback to all workers if department-specific returned empty
+    if (workerList.length === 0) {
+      workers = await Worker.find({ active: true });
+      workerList = Array.isArray(workers) ? workers : [];
+    }
+
     return res.status(200).json({
       success: true,
       data: workerList,

@@ -66,6 +66,64 @@ export default function WorkerAssignmentModal({ ticket, onClose, onAssign }) {
     }
   };
 
+  const FALLBACK_DEFAULT_WORKERS = [
+    {
+      _id: 'WRK-102',
+      workerId: 'WRK-102',
+      name: 'Anita Desai',
+      phone: '+91 98765 43216',
+      departmentId: 'dept_electrical',
+      departmentName: 'Electrical Department',
+      wardName: 'Ward 102 — Indiranagar Civic Zone',
+      skills: ['Streetlight Maintenance', 'Wiring', 'Transformer Inspection'],
+      availabilityStatus: 'Available',
+    },
+    {
+      _id: 'WRK-101',
+      workerId: 'WRK-101',
+      name: 'Kavita Sharma',
+      phone: '+91 98765 43210',
+      departmentId: 'dept_roads',
+      departmentName: 'Roads & Infrastructure Department',
+      wardName: 'Ward 101 — Central Business District',
+      skills: ['Pothole Repair', 'Asphalt Laying', 'Road Maintenance'],
+      availabilityStatus: 'Available',
+    },
+    {
+      _id: 'WRK-103',
+      workerId: 'WRK-103',
+      name: 'Suresh Patil',
+      phone: '+91 98765 43212',
+      departmentId: 'dept_water',
+      departmentName: 'Water & Drainage Department',
+      wardName: 'Ward 103 — Koramangala South Basin',
+      skills: ['Storm Drainage', 'Culvert Jetting', 'Wastewater'],
+      availabilityStatus: 'Available',
+    },
+    {
+      _id: 'WRK-104',
+      workerId: 'WRK-104',
+      name: 'Manjunath Gowda',
+      phone: '+91 98765 43213',
+      departmentId: 'dept_sanitation',
+      departmentName: 'Sanitation Department',
+      wardName: 'Ward 104 — Whitefield Tech Corridor',
+      skills: ['Solid Waste Disposal', 'Dumpster Clearance', 'Street Sanitization'],
+      availabilityStatus: 'Available',
+    },
+    {
+      _id: 'WRK-105',
+      workerId: 'WRK-105',
+      name: 'Rajesh Varma',
+      phone: '+91 98765 43214',
+      departmentId: 'dept_general',
+      departmentName: 'General Municipal Department',
+      wardName: 'Ward 105 — Jayanagar Heritage Sector',
+      skills: ['Public Works', 'Tree Trimming', 'Park Infrastructure'],
+      availabilityStatus: 'Available',
+    },
+  ];
+
   // Filter department roster matching ticket department or all
   const departmentWorkers = allDepartmentWorkers.filter((w) => {
     const ticketDept = (ticket.department || ticket.departmentName || '').toLowerCase();
@@ -73,7 +131,11 @@ export default function WorkerAssignmentModal({ ticket, onClose, onAssign }) {
     return !ticketDept || workerDept.includes(ticketDept) || ticketDept.includes(workerDept);
   });
 
-  const rosterToDisplay = departmentWorkers.length > 0 ? departmentWorkers : allDepartmentWorkers;
+  const rosterToDisplay = departmentWorkers.length > 0 
+    ? departmentWorkers 
+    : allDepartmentWorkers.length > 0 
+      ? allDepartmentWorkers 
+      : FALLBACK_DEFAULT_WORKERS;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-150">
