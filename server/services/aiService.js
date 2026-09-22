@@ -111,7 +111,14 @@ export async function analyzeCivicImage(imagePath, mimeType = 'image/jpeg', orig
 
   // Try Google Gemini first if configured (or as fallback)
   if (hasGemini) {
-    const geminiModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    const geminiModels = [
+      'gemini-3.5-flash-lite',
+      'gemini-3.1-flash-lite',
+      'gemini-3.6-flash',
+      'gemini-3.5-flash',
+      'gemini-3.7-flash',
+      'gemini-3.8-flash',
+    ];
     for (const modelName of geminiModels) {
       if (result) break;
       try {
@@ -131,7 +138,9 @@ export async function analyzeCivicImage(imagePath, mimeType = 'image/jpeg', orig
           config: { responseMimeType: 'application/json' },
         });
 
-        result = JSON.parse(response.text || '{}');
+        let rawText = response.text || '{}';
+        rawText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+        result = JSON.parse(rawText);
         engineUsed = `Google Gemini Vision (${modelName})`;
         break;
       } catch (err) {
