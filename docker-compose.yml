@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  civic-ai-app:
+    build: .
+    container_name: civic_ai_app
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongo:27017/civic_ai
+      - JWT_SECRET=civicai_secret_jwt_key_2026
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7-jammy
+    container_name: civic_ai_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
