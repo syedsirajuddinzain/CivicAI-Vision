@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Key,
   Info,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -23,7 +24,7 @@ export default function LoginPage() {
   const [role, setRole] = useState('citizen'); // 'citizen' | 'authority' | 'worker'
   const [name, setName] = useState('');
   const [email, setEmail] = useState('citizen@civicai.gov');
-  const [password, setPassword] = useState('Citizen123!');
+  const [password, setPassword] = useState('password123');
   const [phone, setPhone] = useState('');
   const [departmentId, setDepartmentId] = useState('dept_roads');
   const [departmentName, setDepartmentName] = useState('Roads & Infrastructure Department');
@@ -44,18 +45,16 @@ export default function LoginPage() {
     setRole(targetRole);
     setError(null);
     setSuccessMsg(null);
+    setPassword('password123');
 
     if (targetRole === 'citizen') {
       setEmail('citizen@civicai.gov');
-      setPassword('Citizen123!');
     } else if (targetRole === 'authority') {
       setEmail('road.authority@civicai.gov');
-      setPassword('Authority123!');
       setDepartmentId('dept_roads');
       setDepartmentName('Roads & Infrastructure Department');
     } else if (targetRole === 'worker') {
       setEmail('worker@civicai.gov');
-      setPassword('Worker123!');
       setDepartmentId('dept_roads');
       setDepartmentName('Roads & Infrastructure Department');
     }
@@ -68,6 +67,16 @@ export default function LoginPage() {
     setDepartmentName(matched ? matched.name : selectedId);
   };
 
+  const setSpecificAccount = (accEmail, accRole, accDeptId, accDeptName) => {
+    setRole(accRole);
+    setEmail(accEmail);
+    setPassword('password123');
+    if (accDeptId) setDepartmentId(accDeptId);
+    if (accDeptName) setDepartmentName(accDeptName);
+    setError(null);
+    setSuccessMsg(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -77,7 +86,7 @@ export default function LoginPage() {
     try {
       if (isRegister) {
         const result = await register({
-          name,
+          name: name.trim() || `${role.charAt(0).toUpperCase() + role.slice(1)} User`,
           email,
           password,
           phone,
@@ -87,18 +96,10 @@ export default function LoginPage() {
           skills,
         });
 
-        if (result?.pendingApproval) {
-          setSuccessMsg(
-            result.message ||
-              'Worker registration request submitted for authority review! You will be able to log in once approved.'
-          );
-          setIsRegister(false);
-        } else {
-          setSuccessMsg(`Account created successfully as ${result.name || name}!`);
-          setTimeout(() => {
-            redirectUser(result.role || role);
-          }, 600);
-        }
+        setSuccessMsg(`Account created successfully as ${result.name || name}! Redirecting...`);
+        setTimeout(() => {
+          redirectUser(result.role || role);
+        }, 500);
       } else {
         const user = await login(email, password);
         setSuccessMsg(`Welcome back, ${user.name}!`);
@@ -137,12 +138,12 @@ export default function LoginPage() {
           </h1>
           <p className="text-xs text-slate-500">
             {isRegister
-              ? 'Select your account type to register with your municipality'
+              ? 'Create a new citizen, worker, or authority account'
               : 'Direct database authentication with role-based dashboard routing'}
           </p>
         </div>
 
-        {/* 3 Separate Role Picker Tabs */}
+        {/* 3 Role Picker Tabs */}
         <div className="space-y-1.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
             Select User Persona / Role
@@ -188,6 +189,46 @@ export default function LoginPage() {
             </button>
           </div>
         </div>
+
+        {/* Quick Demo Pre-fills when Logging In */}
+        {!isRegister && (
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+            <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+              <span>1-Click Demo Accounts (Pass: password123)</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => setSpecificAccount('electrical.authority@civicai.gov', 'authority', 'dept_electrical', 'Electrical Department')}
+                className="text-[11px] font-semibold bg-white hover:bg-blue-50 text-blue-700 border border-slate-200 px-2.5 py-1 rounded-lg transition"
+              >
+                ⚡ Electrical Auth
+              </button>
+              <button
+                type="button"
+                onClick={() => setSpecificAccount('road.authority@civicai.gov', 'authority', 'dept_roads', 'Roads & Infrastructure Department')}
+                className="text-[11px] font-semibold bg-white hover:bg-blue-50 text-blue-700 border border-slate-200 px-2.5 py-1 rounded-lg transition"
+              >
+                🛣️ Road Auth
+              </button>
+              <button
+                type="button"
+                onClick={() => setSpecificAccount('worker@civicai.gov', 'worker', 'dept_roads', 'Roads & Infrastructure Department')}
+                className="text-[11px] font-semibold bg-white hover:bg-amber-50 text-amber-700 border border-slate-200 px-2.5 py-1 rounded-lg transition"
+              >
+                👷 Road Worker
+              </button>
+              <button
+                type="button"
+                onClick={() => setSpecificAccount('anita.worker@civicai.gov', 'worker', 'dept_electrical', 'Electrical Department')}
+                className="text-[11px] font-semibold bg-white hover:bg-amber-50 text-amber-700 border border-slate-200 px-2.5 py-1 rounded-lg transition"
+              >
+                👷 Electric Worker
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Feedback notices */}
         {error && (
@@ -253,25 +294,16 @@ export default function LoginPage() {
 
               {/* Worker Skills */}
               {role === 'worker' && (
-                <>
-                  <div className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-700">Skills / Specialties</label>
-                    <input
-                      type="text"
-                      value={skills}
-                      onChange={(e) => setSkills(e.target.value)}
-                      placeholder="e.g. Pothole Repair, Asphalt Laying"
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-                    />
-                  </div>
-
-                  <div className="p-3 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
-                    <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span>
-                      Worker accounts must be reviewed and approved by the department authority before task assignment and dashboard access.
-                    </span>
-                  </div>
-                </>
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold text-slate-700">Skills / Specialties</label>
+                  <input
+                    type="text"
+                    value={skills}
+                    onChange={(e) => setSkills(e.target.value)}
+                    placeholder="e.g. Pothole Repair, Asphalt Laying"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+                  />
+                </div>
               )}
             </>
           )}
@@ -317,11 +349,11 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Authenticating with MongoDB...</span>
+                <span>Processing...</span>
               </>
             ) : (
               <>
-                <span>{isRegister ? (role === 'worker' ? 'Submit Worker Request' : 'Register Account') : `Sign In as ${role.charAt(0).toUpperCase() + role.slice(1)}`}</span>
+                <span>{isRegister ? 'Register & Login Now' : `Sign In as ${role.charAt(0).toUpperCase() + role.slice(1)}`}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -341,8 +373,6 @@ export default function LoginPage() {
           >
             {isRegister
               ? 'Already have an account? Sign in'
-              : role === 'worker'
-              ? 'Want to join as a Field Worker? Submit Worker Registration'
               : "Don't have an account? Create one now"}
           </button>
         </div>

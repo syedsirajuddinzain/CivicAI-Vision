@@ -25,7 +25,9 @@ export async function register(req, res) {
 
     const userRole = role || 'citizen';
     const isWorker = userRole === 'worker';
-    const initialStatus = isWorker ? 'pending_approval' : 'active';
+    const randId = Math.floor(100 + Math.random() * 900);
+    const workerId = isWorker ? `WRK-${randId}` : null;
+    const initialStatus = 'active';
 
     const user = await User.create({
       name: name.trim(),
@@ -33,40 +35,27 @@ export async function register(req, res) {
       password,
       phone: phone ? phone.trim() : '',
       role: userRole,
-      departmentId: departmentId || (department ? department.toLowerCase().replace(/\s+/g, '_') : null),
-      department: department || null,
+      departmentId: departmentId || (department ? department.toLowerCase().replace(/\s+/g, '_') : 'dept_roads'),
+      department: department || 'Roads & Infrastructure Department',
       wardId: wardId || 'ward_101',
       ward: ward || 'Ward 101 — Central Business District',
+      workerId,
       status: initialStatus,
     });
 
     if (isWorker) {
-      // Create pending worker request record for relevant authority review
-      await WorkerRequest.create({
+      await Worker.create({
         userId: user._id,
+        workerId,
         name: user.name,
-        email: user.email,
         phone: user.phone,
         departmentId: user.departmentId || 'dept_roads',
         departmentName: user.department || 'Roads & Infrastructure Department',
         wardId: user.wardId || 'ward_101',
         wardName: user.ward || 'Ward 101 — Central Business District',
         skills: Array.isArray(skills) ? skills : (skills ? String(skills).split(',').map(s => s.trim()) : ['General Maintenance']),
-        status: 'pending',
-      });
-
-      return res.status(201).json({
-        success: true,
-        pendingApproval: true,
-        message: 'Worker registration submitted successfully! Your account will be active once reviewed and approved by the department authority.',
-        data: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          status: user.status,
-          department: user.department,
-        },
+        availabilityStatus: 'Available',
+        active: true,
       });
     }
 
@@ -83,6 +72,7 @@ export async function register(req, res) {
         department: user.department,
         wardId: user.wardId,
         ward: user.ward,
+        workerId: user.workerId,
         status: user.status,
         token,
       },
