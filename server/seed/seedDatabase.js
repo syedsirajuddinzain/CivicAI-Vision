@@ -109,6 +109,16 @@ export async function seedDatabase() {
     status: 'active',
   });
 
+  await User.create({
+    _id: 'user_citizen_02',
+    name: 'Pooja Sharma',
+    email: 'citizen@civicai.org',
+    password: 'password123',
+    phone: '+91 98765 00008',
+    role: 'citizen',
+    status: 'active',
+  });
+
   const generalAuthority = await User.create({
     _id: 'user_authority_01',
     name: 'Commissioner Meera Sen',
@@ -187,6 +197,81 @@ export async function seedDatabase() {
     email: 'worker@civicai.gov',
     password: 'password123',
     phone: '+91 98765 43210',
+    role: 'worker',
+    departmentId: 'dept_roads',
+    department: 'Roads & Infrastructure Department',
+    wardId: 'ward_101',
+    ward: 'Ward 101 — Central Business District',
+    workerId: 'WRK-101',
+    status: 'active',
+  });
+
+  await User.create({
+    _id: 'user_worker_02',
+    name: 'Anita Desai',
+    email: 'anita.worker@civicai.gov',
+    password: 'password123',
+    phone: '+91 98765 43216',
+    role: 'worker',
+    departmentId: 'dept_electrical',
+    department: 'Electrical Department',
+    wardId: 'ward_102',
+    ward: 'Ward 102 — Indiranagar Civic Zone',
+    workerId: 'WRK-102',
+    status: 'active',
+  });
+
+  await User.create({
+    _id: 'user_worker_03',
+    name: 'Suresh Patil',
+    email: 'suresh.worker@civicai.gov',
+    password: 'password123',
+    phone: '+91 98765 43212',
+    role: 'worker',
+    departmentId: 'dept_water',
+    department: 'Water & Drainage Department',
+    wardId: 'ward_103',
+    ward: 'Ward 103 — Koramangala South Basin',
+    workerId: 'WRK-103',
+    status: 'active',
+  });
+
+  await User.create({
+    _id: 'user_worker_04',
+    name: 'Manjunath Gowda',
+    email: 'manjunath.worker@civicai.gov',
+    password: 'password123',
+    phone: '+91 98765 43213',
+    role: 'worker',
+    departmentId: 'dept_sanitation',
+    department: 'Sanitation Department',
+    wardId: 'ward_104',
+    ward: 'Ward 104 — Whitefield Tech Corridor',
+    workerId: 'WRK-104',
+    status: 'active',
+  });
+
+  await User.create({
+    _id: 'user_worker_05',
+    name: 'Rajesh Varma',
+    email: 'rajesh.worker@civicai.gov',
+    password: 'password123',
+    phone: '+91 98765 43214',
+    role: 'worker',
+    departmentId: 'dept_general',
+    department: 'General Municipal Department',
+    wardId: 'ward_105',
+    ward: 'Ward 105 — Jayanagar Heritage Sector',
+    workerId: 'WRK-105',
+    status: 'active',
+  });
+
+  await User.create({
+    _id: 'user_worker_06',
+    name: 'Ramesh Kumar',
+    email: 'ramesh.worker@civicai.gov',
+    password: 'password123',
+    phone: '+91 98765 43215',
     role: 'worker',
     departmentId: 'dept_roads',
     department: 'Roads & Infrastructure Department',

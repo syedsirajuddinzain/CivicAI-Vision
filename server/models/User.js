@@ -31,17 +31,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
 const MongoUser = mongoose.models.User || mongoose.model('User', userSchema);
 const persistentStore = new PersistentCollection('users');
 
@@ -60,14 +49,21 @@ const User = {
     return await persistentStore.findById(id);
   },
   async create(data) {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(data.password, salt);
+    let hashedPassword = data.password;
+    if (!hashedPassword.startsWith('$2a$') && !hashedPassword.startsWith('$2b$')) {
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(data.password, salt);
+    }
     const userPayload = { ...data, password: hashedPassword };
 
     if (isConnectedToMongo) return await MongoUser.create(userPayload);
     return await persistentStore.create(userPayload);
   },
   async findByIdAndUpdate(id, update, options) {
+    if (update.password && !update.password.startsWith('$2a$') && !update.password.startsWith('$2b$')) {
+      const salt = await bcrypt.genSalt(10);
+      update.password = await bcrypt.hash(update.password, salt);
+    }
     if (isConnectedToMongo) return await MongoUser.findByIdAndUpdate(id, update, options);
     return await persistentStore.findByIdAndUpdate(id, update, options);
   },
@@ -75,8 +71,12 @@ const User = {
     if (isConnectedToMongo) return await MongoUser.countDocuments(filter);
     return await persistentStore.countDocuments(filter);
   },
-  async matchPassword(enteredPassword, hashedPassword) {
-    return await bcrypt.compare(enteredPassword, hashedPassword);
+  async matchPassword(enteredPassword, storedPassword) {
+    if (!enteredPassword || !storedPassword) return false;
+    if (storedPassword.startsWith('$2a$') || storedPassword.startsWith('$2b$')) {
+      return await bcrypt.compare(enteredPassword, storedPassword);
+    }
+    return enteredPassword === storedPassword;
   },
   async deleteMany(filter = {}) {
     if (isConnectedToMongo) return await MongoUser.deleteMany(filter);
