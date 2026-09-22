@@ -22,14 +22,14 @@ export async function connectDB() {
 
   try {
     const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 2000,
+      serverSelectionTimeoutMS: 10000,
     });
     isConnectedToMongo = true;
     console.log(`[Database] MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`);
     return conn;
   } catch (error) {
     isConnectedToMongo = false;
-    console.warn(`[Database] MongoDB not running at ${uri}.`);
+    console.warn(`[Database] MongoDB connection warning (${error.message}).`);
     console.log(`[Database] Initializing Persistent Server Data Store at: ${DATA_DIR}`);
     return null;
   }
